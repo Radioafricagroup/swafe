@@ -112,7 +112,7 @@ def describe_workflow(workflowclasspath):
     click.echo('Fetching workflow %s' % workflow.name)
     try:
         response = swf.describe_workflow_type(domain=workflow.domain,
-        workflowType=workflow.get_workflow_type())
+        workflowType=workflow.type())
     except ClientError as e:
         print e.response['Error']['Code'], e.response['Error']['Message']
         return
@@ -131,7 +131,7 @@ def register_workflow(workflowclasspath):
     workflow = instantiate_class(workflowclasspath)
     click.echo('Registering workflow %s' % workflow.name)
     try:
-        response = swf.register_workflow_type(**workflow.get_params())
+        response = swf.register_workflow_type(**workflow.params())
     except ClientError as e:
         print e.response['Error']['Code'], e.response['Error']['Message']
         return
@@ -145,11 +145,28 @@ def deprecate_workflow(workflowclasspath):
     click.echo('Deprecating workflow %s ' % workflow.name)
     try:
         response = swf.deprecate_workflow_type(domain=workflow.domain,
-        workflowType=workflow.get_workflow_type())
+        workflowType=workflow.type())
     except ClientError as e:
         print e.response['Error']['Code'], e.response['Error']['Message']
         return
     click.echo('Successfully deprecated %s ' % workflow.name)
+
+@run.command('register.workflow.activities')
+@click.argument('workflowClassPath', required=True)
+def register_activities(workflowclasspath):
+    workflow = instantiate_class(workflowclasspath)
+    click.echo('Registering activities under %s ' % workflow.name)
+
+    for activity_definition in workflow.activity_definitions():
+        try:
+            activity_definition['domain'] = workflow.domain
+            activity_definition['defaultTaskList'] = { 'name': workflow.taskList}
+
+            swf.register_activity_type(**activity_definition)
+            click.echo('Successfully registered activity %s ' % activity_definition['name'] )
+        except ClientError as e:
+            print e.response['Error']['Code'], e.response['Error']['Message']
+
 
 def instantiate_class(classpath):
     modulename, classname = classpath.rsplit('.', 1)
