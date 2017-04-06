@@ -1,5 +1,6 @@
 from activity import Activity
 import abc
+import uuid
 
 
 class Workflow(object):
@@ -17,7 +18,7 @@ class Workflow(object):
     __metaclass__ = abc.ABCMeta
 
     def type(self):
-        return { 'name': self.name, 'version': self.version }
+        return {'name': self.name, 'version': self.version}
 
     def params(self):
         params = dict(domain=self.domain, name=self.name, version=self.version)
@@ -28,7 +29,7 @@ class Workflow(object):
         if self.description:
             params['description'] = self.description
         if self.taskList:
-            params['defaultTaskList'] = { 'name': self.taskList }
+            params['defaultTaskList'] = {'name': self.taskList}
         if self.taskPriority:
             params['defaultTaskPriority'] = self.taskPriority
         if self.lambdaRole:
@@ -38,6 +39,35 @@ class Workflow(object):
 
     def activity_definitions(self):
         return [getattr(self, func).params() for func in dir(self) if isinstance(getattr(self, func), Activity)]
+
+    def _build_decisions(self, activity=None, activity_input=''):
+        if activity:
+            return [
+                {
+                    'decisionType': 'ScheduleActivityTask',
+                    'scheduleActivityTaskDecisionAttributes': {
+                        'activityType': {
+                            'name': activity.name,
+                            'version': activity.version
+                        },
+                        'activityId': 'activity-%s-%s' % (activity.name, str(uuid.uuid4())),
+                        'input': activity_input,
+                        'scheduleToCloseTimeout': 'NONE',
+                        'scheduleToStartTimeout': 'NONE',
+                        'startToCloseTimeout': 'NONE',
+                        'heartbeatTimeout': 'NONE',
+                        'taskList': {'name': self.taskList},
+                    }
+                }
+            ]
+        return [
+            {
+                'decisionType': 'CompleteWorkflowExecution',
+                'completeWorkflowExecutionDecisionAttributes': {
+                    'result': 'success'
+                }
+            }
+        ]
 
     @abc.abstractmethod
     def decider(self, decision_task):

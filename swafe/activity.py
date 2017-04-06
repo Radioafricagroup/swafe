@@ -6,6 +6,7 @@ def initialize(version):
 
 
 class Activity(object):
+
     def __init__(self, func, version):
         self.name = func.__name__
         self.action = func

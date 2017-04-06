@@ -3,6 +3,8 @@ import os
 import sys
 from lib import swf
 from botocore.exceptions import ClientError
+from runner import Runner
+
 
 @click.group()
 @click.pass_context
@@ -10,9 +12,10 @@ def run(context):
     sys.path.append(os.getcwd())
     pass
 
+
 @run.command('list.domains')
 @click.option('--registered/--deprecated', default=True,
-                help='Specify the registration status of the domains to list, default is REGISTERED')
+              help='Specify the registration status of the domains to list, default is REGISTERED')
 def list_domains(registered):
     status = 'REGISTERED' if registered else 'DEPRECATED'
 
@@ -25,6 +28,7 @@ def list_domains(registered):
 
     for domain in response['domainInfos']:
         click.echo(' - %s' % domain['name'])
+
 
 @run.command('describe.domain')
 @click.argument('domain', required=True)
@@ -39,9 +43,12 @@ def describe_domain(domain):
 
     click.echo('- %s' % domain)
     if response['domainInfo'].has_key('description'):
-        click.echo('\t description: %s' % response['domainInfo']['description'])
+        click.echo('\t description: %s' %
+                   response['domainInfo']['description'])
     click.echo('\t status: %s' % response['domainInfo']['status'])
-    click.echo('\t retention perion: %s' % response['configuration']['workflowExecutionRetentionPeriodInDays'])
+    click.echo('\t retention perion: %s' % response['configuration'][
+               'workflowExecutionRetentionPeriodInDays'])
+
 
 @run.command('register.domain')
 @click.argument('domain', required=True)
@@ -49,7 +56,8 @@ def describe_domain(domain):
 @click.option('--desc', help='Short description of the domain')
 def register_domain(domain, retention_period, desc):
     click.echo('Registering domain %s' % domain)
-    params = { 'name': domain, 'workflowExecutionRetentionPeriodInDays': retention_period }
+    params = {'name': domain,
+              'workflowExecutionRetentionPeriodInDays': retention_period}
     if desc:
         params['description'] = desc
     try:
@@ -59,6 +67,7 @@ def register_domain(domain, retention_period, desc):
         return
 
     click.echo('Successfully registered %s ' % domain)
+
 
 @run.command('deprecate.domain')
 @click.argument('domain', required=True)
@@ -72,6 +81,7 @@ def deprecate_domain(domain):
         return
 
     click.echo('Successfully deprecated %s ' % domain)
+
 
 @run.command('list.domain.workflows')
 @click.argument('domain', required=True)
@@ -90,19 +100,23 @@ def list_domain_workflows(domain, registered, name):
         return
     if len(response['typeInfos']) == 0:
         if name:
-            click.echo('There are no %s workflows with the name %s in the domain %s' % (status, name, domain))
+            click.echo('There are no %s workflows with the name %s in the domain %s' % (
+                status, name, domain))
             return
-        click.echo('There are no %s workflows in the domain %s ' % (status, domain))
+        click.echo('There are no %s workflows in the domain %s ' %
+                   (status, domain))
         return
 
     click.echo('Domain: %s \n' % domain)
 
     for workflow in response['typeInfos']:
-        click.echo(' %s - (version %s)' % (workflow['workflowType']['name'], workflow['workflowType']['version']))
+        click.echo(' %s - (version %s)' %
+                   (workflow['workflowType']['name'], workflow['workflowType']['version']))
         click.echo('\t status: %s' % workflow['status'])
         if workflow.has_key('description'):
             click.echo('\t description: %s' % workflow['description'])
         click.echo('\t created: %s \n' % workflow['creationDate'])
+
 
 @run.command('describe.workflow')
 @click.argument('workflowClassPath', required=True)
@@ -112,7 +126,7 @@ def describe_workflow(workflowclasspath):
     click.echo('Fetching workflow %s' % workflow.name)
     try:
         response = swf.describe_workflow_type(domain=workflow.domain,
-        workflowType=workflow.type())
+                                              workflowType=workflow.type())
     except ClientError as e:
         print e.response['Error']['Code'], e.response['Error']['Message']
         return
@@ -122,7 +136,9 @@ def describe_workflow(workflowclasspath):
     click.echo('\t created:  %s' % response['typeInfo']['creationDate'])
 
     if response['configuration'].has_key('description'):
-        click.echo('\t description: %s ' % response['configuration']['description'])
+        click.echo('\t description: %s ' %
+                   response['configuration']['description'])
+
 
 @run.command('register.workflow')
 @click.argument('workflowClassPath', required=True)
@@ -135,7 +151,8 @@ def register_workflow(workflowclasspath):
     except ClientError as e:
         print e.response['Error']['Code'], e.response['Error']['Message']
         return
-    click.echo('Successfully regisered workflow %s in %s domain' % (workflow.name, workflow.domain))
+    click.echo('Successfully regisered workflow %s in %s domain' %
+               (workflow.name, workflow.domain))
 
 
 @run.command('deprecate.workflow')
@@ -145,11 +162,12 @@ def deprecate_workflow(workflowclasspath):
     click.echo('Deprecating workflow %s ' % workflow.name)
     try:
         response = swf.deprecate_workflow_type(domain=workflow.domain,
-        workflowType=workflow.type())
+                                               workflowType=workflow.type())
     except ClientError as e:
         print e.response['Error']['Code'], e.response['Error']['Message']
         return
     click.echo('Successfully deprecated %s ' % workflow.name)
+
 
 @run.command('register.workflow.activities')
 @click.argument('workflowClassPath', required=True)
@@ -160,12 +178,33 @@ def register_activities(workflowclasspath):
     for activity_definition in workflow.activity_definitions():
         try:
             activity_definition['domain'] = workflow.domain
-            activity_definition['defaultTaskList'] = { 'name': workflow.taskList}
+            activity_definition['defaultTaskList'] = {
+                'name': workflow.taskList}
 
             swf.register_activity_type(**activity_definition)
-            click.echo('Successfully registered activity %s ' % activity_definition['name'] )
+            click.echo('Successfully registered activity %s ' %
+                       activity_definition['name'])
         except ClientError as e:
             print e.response['Error']['Code'], e.response['Error']['Message']
+
+
+@run.command('decider')
+@click.argument('workflowClassPath', required=True)
+@click.argument('action', required=True)
+def run_decider(workflowclasspath, action):
+    workflow = instantiate_class(workflowclasspath)
+    click.echo('Running decider for %s' % workflow.name)
+    runner = Runner(
+        workflow, '/Users/ishuahkariuki/Workshop/swafe_test/decider.pid')
+    if action == 'start':
+        runner.start()
+    elif action == 'stop':
+        runner.stop()
+    elif action == 'restart':
+        runner.restart()
+    else:
+        click.echo(
+            'Invalid action %s. Valid actions are start, stop and restart', action)
 
 
 def instantiate_class(classpath):
