@@ -19,8 +19,8 @@ class Daemon(object):
     """ Linux Daemon boilerplate. """
 
     def __init__(self, pid_file,
-                 stdout='/Users/ishuahkariuki/Workshop/swafe_test/output.log',
-                 stderr='/Users/ishuahkariuki/Workshop/swafe_test/error.log'):
+                 stdout='%s/swafe_out.log' % os.getcwd(),
+                 stderr='%s/swafe_error.log' % os.getcwd()):
         self.stdout = stdout
         self.stderr = stderr
         self.pid_file = pid_file

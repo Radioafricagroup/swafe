@@ -195,7 +195,7 @@ def run_decider(workflowclasspath, action):
     workflow = instantiate_class(workflowclasspath)
     click.echo('Running decider for %s' % workflow.name)
     runner = Runner(
-        workflow, '/Users/ishuahkariuki/Workshop/swafe_test/decider.pid')
+        workflow, '%s/swafe.pid' % os.getcwd())
     if action == 'start':
         runner.start()
     elif action == 'stop':
