@@ -4,7 +4,7 @@ from botocore.exceptions import ClientError
 from task import ActivityTask, DecisionTask
 from lib import swf
 from daemon import Daemon
-from multiprocessing import Process
+from threading import Thread
 
 
 class Runner(Daemon):
@@ -51,6 +51,7 @@ class Runner(Daemon):
 
     def run(self):
         for i in range(1, 5):
-            process = Process(target=self.worker)
-            process.start()
+            thread = Thread(target=self.worker)
+            thread.setDaemon(True)
+            thread.start()
         self.decider()
