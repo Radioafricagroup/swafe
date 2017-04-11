@@ -191,11 +191,15 @@ def register_activities(workflowclasspath):
 @run.command('decider')
 @click.argument('workflowClassPath', required=True)
 @click.argument('action', required=True)
-def run_decider(workflowclasspath, action):
+@click.option('--workers', default=5, help='Number of workers to run, default is 5')
+def run_decider(workflowclasspath, action, workers):
     workflow = instantiate_class(workflowclasspath)
     click.echo('Running decider for %s' % workflow.name)
+    if workers < 1:
+        print 'Number of workers cannot be less than 1'
+        return
     runner = Runner(
-        workflow, '%s/swafe.pid' % os.getcwd())
+        workflow, '%s/swafe.pid' % os.getcwd(), workers)
     if action == 'start':
         runner.start()
     elif action == 'stop':

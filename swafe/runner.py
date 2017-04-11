@@ -9,9 +9,10 @@ from threading import Thread
 
 class Runner(Daemon):
 
-    def __init__(self, workflow, pidfile):
+    def __init__(self, workflow, pidfile, worker_count=5):
         super(Runner, self).__init__(pidfile)
         self.workflow = workflow
+        self.worker_count = worker_count
 
     def worker(self):
         while True:
@@ -50,7 +51,7 @@ class Runner(Daemon):
                 print e
 
     def run(self):
-        for i in range(1, 5):
+        for i in range(0, self.worker_count):
             thread = Thread(target=self.worker)
             thread.setDaemon(True)
             thread.start()
