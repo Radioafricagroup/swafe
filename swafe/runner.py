@@ -2,6 +2,7 @@ import poller
 from botocore.vendored.requests.exceptions import ReadTimeout
 from botocore.exceptions import ClientError
 from task import ActivityTask, DecisionTask
+from exceptions import ExcecutionFailed
 from lib import swf
 from daemon import Daemon
 from threading import Thread
@@ -32,6 +33,9 @@ class Runner(Daemon):
                 print "Client error", e
             except ValueError as e:
                 print e
+            except ExcecutionFailed as e:
+                print e
+                swf.respond_activity_task_failed(taskToken=activity_task.task_token, reason=str(e), details=e.details)
 
     def decider(self):
         while True:
@@ -39,7 +43,7 @@ class Runner(Daemon):
                 task = poller.poll_for_decision_task(
                     self.workflow.domain, {'name': self.workflow.taskList}, self.workflow.name)
                 decision_task = DecisionTask(task)
-                print 'received decision task %s with input %s' % (decision_task.completed_activity, decision_task.input)
+                print 'received decision task %s' % decision_task.completed_activity
                 decisions = self.workflow.decider(decision_task)
                 swf.respond_decision_task_completed(
                     taskToken=decision_task.task_token, decisions=decisions)

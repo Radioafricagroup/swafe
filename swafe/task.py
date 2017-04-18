@@ -11,7 +11,8 @@ class DecisionTask(object):
 
         self.completed_activity = None
         last_event = self.history[-1]
-
+        self.event_type = last_event['eventType']
+        
         if last_event['eventType'] == 'WorkflowExecutionStarted' and task_json['taskToken'] not in self.history:
             self.input = last_event[
                 'workflowExecutionStartedEventAttributes']['input']
@@ -22,6 +23,9 @@ class DecisionTask(object):
                 'activityTaskScheduledEventAttributes']['activityType']['name']
             self.input = last_event[
                 'activityTaskCompletedEventAttributes'].get('result')
+        elif last_event['eventType'] == 'ActivityTaskFailed':
+            self.reason = last_event['activityTaskFailedEventAttributes']['reason']
+            self.details = last_event['activityTaskFailedEventAttributes']['details']
 
 
 class ActivityTask(object):
