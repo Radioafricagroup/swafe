@@ -2,7 +2,7 @@ import poller
 from botocore.vendored.requests.exceptions import ReadTimeout
 from botocore.exceptions import ClientError
 from task import ActivityTask, DecisionTask
-from exceptions import ExcecutionFailed
+from exceptions import ExcecutionFailed, MalformedTask
 from lib import swf
 from daemon import Daemon
 from threading import Thread
@@ -31,7 +31,7 @@ class Runner(Daemon):
                 print "Read timeout while polling", e
             except ClientError as e:
                 print "Client error", e
-            except ValueError as e:
+            except MalformedTask as e:
                 print e
             except ExcecutionFailed as e:
                 print e
@@ -51,7 +51,7 @@ class Runner(Daemon):
                 print "Read timeout while polling", e
             except ClientError as e:
                 print "Client error", e
-            except ValueError as e:
+            except MalformedTask as e:
                 print e
 
     def run(self):
