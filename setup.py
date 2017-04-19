@@ -1,7 +1,7 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(name='swafe',
-      version='0.1.5.dev1',
+      version='0.1.6.dev1',
       description='A python library for orchestrating AWS SWF workflows',
       classifiers=[
           'Development Status :: 3 - Alpha',
@@ -14,7 +14,10 @@ setup(name='swafe',
       author='Ishuah Kariuki',
       author_email='kariuki@ishuah.com',
       license='GNU GPLv3',
-      packages=['swafe'],
+      packages=find_packages(exclude=("test*", )),
+      package_dir={
+        'swafe': 'swafe'
+        },
       install_requires=[
           'boto3',
           'click'
