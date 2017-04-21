@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='swafe',
-      version='0.1.7.dev1',
+      version='0.1.8.dev1',
       description='A python library for orchestrating AWS SWF workflows',
       classifiers=[
           'Development Status :: 3 - Alpha',
