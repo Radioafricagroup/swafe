@@ -10,8 +10,8 @@ from threading import Thread
 
 class Runner(Daemon):
 
-    def __init__(self, workflow, pidfile, worker_count=5):
-        super(Runner, self).__init__(pidfile)
+    def __init__(self, workflow, pidfile, stdout, stderr, worker_count=5):
+        super(Runner, self).__init__(pidfile, stdout, stderr)
         self.workflow = workflow
         self.worker_count = worker_count
 

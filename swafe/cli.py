@@ -193,17 +193,28 @@ def register_activities(workflowclasspath):
 @click.option('--workers', default=5, help='Number of workers to run, default is 5')
 def run_decider(workflowclasspath, action, workers):
     workflow = instantiate_class(workflowclasspath)
-    click.echo('Running decider for %s' % workflow.name)
     if workers < 1:
         click.echo('Number of workers cannot be less than 1')
         return
+    pid_file = '%s/swafe-%s.pid' % (os.getcwd(), workflow.name.lower())
+    stdout = '%s/swafe-%s.log' % (os.getcwd(), workflow.name.lower())
+    stderr = '%s/swafe-%s-error.log' % (os.getcwd(), workflow.name.lower())
     runner = Runner(
-        workflow, '%s/swafe.pid' % os.getcwd(), workers)
+        workflow, pid_file, stdout, stderr, workers)
     if action == 'start':
+        click.echo('Starting decider for %s' % workflow.name)
+        click.echo('PID file: %s' % pid_file)
+        click.echo('Stdout log: %s' % stdout)
+        click.echo('Stderr log: %s' % stderr)
         runner.start()
     elif action == 'stop':
+        click.echo('Stopping decider for %s' % workflow.name)
         runner.stop()
     elif action == 'restart':
+        click.echo('Restarting decider for %s' % workflow.name)
+        click.echo('PID file: %s' % pid_file)
+        click.echo('Stdout log: %s' % stdout)
+        click.echo('Stderr log: %s' % stderr)
         runner.restart()
     else:
         click.echo(
