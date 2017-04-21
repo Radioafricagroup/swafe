@@ -2,7 +2,7 @@ import poller
 from botocore.vendored.requests.exceptions import ReadTimeout
 from botocore.exceptions import ClientError
 from task import ActivityTask, DecisionTask
-from exceptions import ExcecutionFailed, MalformedTask
+from exceptions import ActivityFailed, WorkflowFailed
 from lib import swf
 from daemon import Daemon
 from threading import Thread
@@ -24,7 +24,7 @@ class Runner(Daemon):
                 if not 'taskToken' in task:
                     print "No activities found after poll"
                     continue
-                
+
                 activity_task = ActivityTask(task)
                 print 'received activity task %s' % activity_task.activity
                 activity = getattr(self.workflow, activity_task.activity)
@@ -36,7 +36,7 @@ class Runner(Daemon):
                 print "Read timeout while polling", e
             except ClientError as e:
                 print "Client error", e
-            except ExcecutionFailed as e:
+            except ActivityFailed as e:
                 print e
                 swf.respond_activity_task_failed(taskToken=activity_task.task_token, reason=str(e), details=e.details)
 
@@ -60,6 +60,18 @@ class Runner(Daemon):
                 print "Read timeout while polling", e
             except ClientError as e:
                 print "Client error", e
+            except WorkflowFailed as e:
+                print e
+                swf.respond_decision_task_completed([
+                    {
+                        'decisionType': 'FailWorkflowExecution',
+                        'failWorkflowExecutionDecisionAttributes': {
+                            'reason': e.reason,
+                            'detail': e.detail
+                        }
+                    }
+                ])
+
 
     def run(self):
         for i in range(0, self.worker_count):
