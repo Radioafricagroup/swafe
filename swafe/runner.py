@@ -67,7 +67,7 @@ class Runner(Daemon):
                         'decisionType': 'FailWorkflowExecution',
                         'failWorkflowExecutionDecisionAttributes': {
                             'reason': e.reason,
-                            'detail': e.detail
+                            'detail': e.details
                         }
                     }
                 ])
