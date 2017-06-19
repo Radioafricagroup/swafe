@@ -38,7 +38,9 @@ class Workflow(object):
         return params
 
     def activity_definitions(self):
-        return [getattr(self, func).params() for func in dir(self) if isinstance(getattr(self, func), Activity)]
+        return [getattr(self, func).params()
+                for func in dir(self) if isinstance(getattr(self, func),
+                Activity)]
 
     def _build_decisions(self, activity=None, activity_input=''):
         if activity:
@@ -50,7 +52,8 @@ class Workflow(object):
                             'name': activity.name,
                             'version': activity.version
                         },
-                        'activityId': 'activity-%s-%s' % (activity.name, str(uuid.uuid4())),
+                        'activityId': 'activity-%s-%s'
+                        % (activity.name, str(uuid.uuid4())),
                         'input': activity_input,
                         'scheduleToCloseTimeout': 'NONE',
                         'scheduleToStartTimeout': 'NONE',
