@@ -1,3 +1,6 @@
+from exceptions import WorkflowFailed
+
+
 class DecisionTask(object):
 
     def __init__(self, task_json):
@@ -20,8 +23,7 @@ class DecisionTask(object):
             self.input = last_event[
                 'activityTaskCompletedEventAttributes'].get('result')
         elif last_event['eventType'] == 'ActivityTaskFailed':
-            self.reason = last_event['activityTaskFailedEventAttributes']['reason']
-            self.details = last_event['activityTaskFailedEventAttributes']['details']
+            raise WorkflowFailed(last_event['activityTaskFailedEventAttributes']['reason'], last_event['activityTaskFailedEventAttributes']['details'])
 
 
 class ActivityTask(object):
