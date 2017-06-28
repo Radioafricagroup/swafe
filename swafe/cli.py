@@ -46,7 +46,7 @@ def describe_domain(domain):
         click.echo('\t description: %s' %
                    response['domainInfo']['description'])
     click.echo('\t status: %s' % response['domainInfo']['status'])
-    click.echo('\t retention perion: %s' % response['configuration'][
+    click.echo('\t retention period: %s' % response['configuration'][
                'workflowExecutionRetentionPeriodInDays'])
 
 
