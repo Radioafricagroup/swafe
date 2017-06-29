@@ -1,9 +1,13 @@
-from activity import Activity
+from __future__ import absolute_import
+from builtins import str
+from builtins import object
+from .activity import Activity
 import abc
 import uuid
+from future.utils import with_metaclass
 
 
-class Workflow(object):
+class Workflow(with_metaclass(abc.ABCMeta, object)):
     domain = None
     name = None
     version = None
@@ -14,8 +18,6 @@ class Workflow(object):
     taskPriority = None
     childPolicy = 'TERMINATE'
     lambdaRole = None
-
-    __metaclass__ = abc.ABCMeta
 
     def type(self):
         return {'name': self.name, 'version': self.version}

@@ -4,6 +4,7 @@ This is a workflow demo.
 The image processing functions defined here are borrowed from
 http://effbot.org/zone/pil-sepia.htm
 '''
+from builtins import range
 from swafe.workflow import Workflow
 from swafe import activity
 import boto3

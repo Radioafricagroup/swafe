@@ -20,7 +20,9 @@ setup(name='swafe',
         },
       install_requires=[
           'boto3',
-          'click'
+          'click',
+          'future'
+
       ],
       include_package_data=True,
       zip_safe=False,

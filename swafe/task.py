@@ -1,4 +1,6 @@
-from exceptions import WorkflowFailed
+from __future__ import absolute_import
+from builtins import object
+from .exceptions import WorkflowFailed
 
 
 class DecisionTask(object):

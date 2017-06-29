@@ -1,9 +1,10 @@
+from __future__ import absolute_import
 import click
 import os
 import sys
-from lib import swf
+from .lib import swf
 from botocore.exceptions import ClientError
-from runner import Runner
+from .runner import Runner
 
 
 @click.group()
@@ -42,7 +43,7 @@ def describe_domain(domain):
         return
 
     click.echo('- %s' % domain)
-    if response['domainInfo'].has_key('description'):
+    if 'description' in response['domainInfo']:
         click.echo('\t description: %s' %
                    response['domainInfo']['description'])
     click.echo('\t status: %s' % response['domainInfo']['status'])
@@ -112,7 +113,7 @@ def list_domain_workflows(domain, registered, name):
         click.echo(' %s - (version %s)' %
                    (workflow['workflowType']['name'], workflow['workflowType']['version']))
         click.echo('\t status: %s' % workflow['status'])
-        if workflow.has_key('description'):
+        if 'description' in workflow:
             click.echo('\t description: %s' % workflow['description'])
         click.echo('\t created: %s \n' % workflow['creationDate'])
 
@@ -134,7 +135,7 @@ def describe_workflow(workflowclasspath):
     click.echo('\t status: %s' % response['typeInfo']['status'])
     click.echo('\t created:  %s' % response['typeInfo']['creationDate'])
 
-    if response['configuration'].has_key('description'):
+    if 'description' in response['configuration']:
         click.echo('\t description: %s ' %
                    response['configuration']['description'])
 

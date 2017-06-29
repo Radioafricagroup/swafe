@@ -1,5 +1,8 @@
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import str
 import uuid
-from lib import swf
+from .lib import swf
 from botocore.exceptions import ClientError
 
 def start_workflow(domain, workflowType, taskList, activity_input):
@@ -11,6 +14,6 @@ def start_workflow(domain, workflowType, taskList, activity_input):
             taskList=taskList,
             input=activity_input
         )
-        print "Workflow requested: ", response
+        print("Workflow requested: ", response)
     except ClientError as e:
-        print "Workflow excecution already started: ", e.response.get("Error", {}).get("Code")
+        print("Workflow excecution already started: ", e.response.get("Error", {}).get("Code"))
