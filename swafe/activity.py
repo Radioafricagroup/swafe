@@ -1,4 +1,6 @@
 from builtins import object
+
+
 def initialize(version):
 
     def wrap(func):

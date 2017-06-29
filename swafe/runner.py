@@ -44,7 +44,8 @@ class Runner(Daemon):
                 print("Client error", e)
             except ActivityFailed as e:
                 print(e)
-                swf.respond_activity_task_failed(taskToken=activity_task.task_token, reason=str(e), details=e.details)
+                swf.respond_activity_task_failed(
+                    taskToken=activity_task.task_token, reason=str(e), details=e.details)
 
     def decider(self):
         while True:
@@ -58,7 +59,8 @@ class Runner(Daemon):
                     continue
 
                 decision_task = DecisionTask(task)
-                print('received decision task %s' % decision_task.completed_activity)
+                print('received decision task %s' %
+                      decision_task.completed_activity)
                 decisions = self.workflow.decider(decision_task)
                 swf.respond_decision_task_completed(
                     taskToken=decision_task.task_token, decisions=decisions)
@@ -77,7 +79,6 @@ class Runner(Daemon):
                         }
                     }
                 ])
-
 
     def run(self):
         for i in range(0, self.worker_count):

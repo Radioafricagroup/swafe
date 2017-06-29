@@ -42,7 +42,7 @@ class Workflow(with_metaclass(abc.ABCMeta, object)):
     def activity_definitions(self):
         return [getattr(self, func).params()
                 for func in dir(self) if isinstance(getattr(self, func),
-                Activity)]
+                                                    Activity)]
 
     def _build_decisions(self, activity=None, activity_input=''):
         if activity:

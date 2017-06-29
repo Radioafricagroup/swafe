@@ -12,6 +12,7 @@ import json
 import os
 from PIL import Image, ImageOps
 
+
 class ImageProcessingWorkflow(Workflow):
     domain = 'ImageProcessing'
     name = 'ImageProcessingWorkflow'
@@ -42,8 +43,9 @@ class ImageProcessingWorkflow(Workflow):
 
         s3 = boto3.client('s3')
         local_path = '%s/tmp/%s' % (os.path.dirname(os.path.realpath(__file__)),
-                        image_data['path'].split('/')[-1])
-        s3.download_file('swf-image-processing', image_data['path'], local_path)
+                                    image_data['path'].split('/')[-1])
+        s3.download_file('swf-image-processing',
+                         image_data['path'], local_path)
         image_data['local_path'] = local_path
         return json.dumps(image_data)
 
@@ -91,5 +93,6 @@ class ImageProcessingWorkflow(Workflow):
         image_data = json.loads(image_data)
 
         s3 = boto3.client('s3')
-        s3.upload_file(image_data['local_path'], 'swf-image-processing', image_data['path'].replace('raw-images', 'processed-images'))
+        s3.upload_file(image_data['local_path'], 'swf-image-processing',
+                       image_data['path'].replace('raw-images', 'processed-images'))
         return 'success'

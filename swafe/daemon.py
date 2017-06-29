@@ -93,7 +93,8 @@ class Daemon(object):
         """ Start the daemon. """
         print("Starting...")
         if self.get_pid_by_file():
-            print('PID file {0} exists. Is the deamon already running?'.format(self.pid_file))
+            print('PID file {0} exists. Is the deamon already running?'.format(
+                self.pid_file))
             sys.exit(1)
 
         self.daemonize()
@@ -104,7 +105,8 @@ class Daemon(object):
         print("Stopping...")
         pid = self.get_pid_by_file()
         if not pid:
-            print("PID file {0} doesn't exist. Is the daemon not running?".format(self.pid_file))
+            print("PID file {0} doesn't exist. Is the daemon not running?".format(
+                self.pid_file))
             return
 
         # Time to kill.
