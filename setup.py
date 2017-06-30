@@ -31,4 +31,6 @@ setup(name='swafe',
           'console_scripts': [
               'swafe = swafe.cli:run',
           ]
-      })
+      },
+      test_suite='nose.collector',
+      tests_require=['nose', 'moto'])

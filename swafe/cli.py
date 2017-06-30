@@ -156,7 +156,7 @@ def register_workflow(workflowclasspath):
         click.echo('%s %s' % (e.response['Error'][
                    'Code'], e.response['Error']['Message']))
         return
-    click.echo('Successfully regisered workflow %s in %s domain' %
+    click.echo('Successfully registered workflow %s in %s domain' %
                (workflow.name, workflow.domain))
 
 
