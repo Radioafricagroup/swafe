@@ -41,7 +41,7 @@ def setup_mock_decision():
 
 def setup_mock_activity():
     setup_mock_decision()
-    
+
     swf = boto3.client('swf')
     test_workflow = TestCaseWorkflow()
 
@@ -50,7 +50,6 @@ def setup_mock_activity():
         taskList={'name': test_workflow.taskList},
         identity='decider-%s-%s' % (test_workflow.name, str(uuid.uuid4()))
     )
-    print(task)
     decision_task = DecisionTask(task)
 
     decisions = test_workflow.decider(decision_task)
