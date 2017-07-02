@@ -139,9 +139,9 @@ def describe_workflow(workflowclasspath):
     click.echo('\t status: %s' % response['typeInfo']['status'])
     click.echo('\t created:  %s' % response['typeInfo']['creationDate'])
 
-    if 'description' in response['configuration']:
+    if 'description' in response['typeInfo']:
         click.echo('\t description: %s ' %
-                   response['configuration']['description'])
+                   response['typeInfo']['description'])
 
 
 @run.command('register.workflow')

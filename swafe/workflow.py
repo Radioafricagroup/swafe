@@ -13,7 +13,7 @@ class Workflow(with_metaclass(abc.ABCMeta, object)):
     version = None
     taskList = None
     description = None
-    taskStartToCloseTimeout = 'NONE'
+    taskStartToCloseTimeout = '3600'
     executionStartToCloseTimeout = '3600'
     taskPriority = None
     childPolicy = 'TERMINATE'
@@ -60,7 +60,7 @@ class Workflow(with_metaclass(abc.ABCMeta, object)):
                         'scheduleToCloseTimeout': 'NONE',
                         'scheduleToStartTimeout': 'NONE',
                         'startToCloseTimeout': 'NONE',
-                        'heartbeatTimeout': 'NONE',
+                        'heartbeatTimeout': '3600',
                         'taskList': {'name': self.taskList},
                     }
                 }
