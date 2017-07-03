@@ -71,7 +71,7 @@ class ImageProcessingWorkflow(Workflow):
         sepia = []
         r, g, b = (255, 240, 192)
         for i in range(255):
-            sepia.extend((r*i/255, g*i/255, b*i/255))
+            sepia.extend((r*i//255, g*i//255, b*i//255))
 
         image = Image.open(image_data['local_path'])
 
