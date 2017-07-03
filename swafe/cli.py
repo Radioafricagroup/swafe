@@ -4,7 +4,7 @@ import os
 import sys
 from .lib import swf
 from botocore.exceptions import ClientError
-from .runner import Runner
+from .runner import Decider
 
 
 @click.group()
@@ -207,23 +207,23 @@ def run_decider(workflowclasspath, action, workers):
     pid_file = '%s/swafe-%s.pid' % (os.getcwd(), workflow.name.lower())
     stdout = '%s/swafe-%s.log' % (os.getcwd(), workflow.name.lower())
     stderr = '%s/swafe-%s-error.log' % (os.getcwd(), workflow.name.lower())
-    runner = Runner(
+    decider = Decider(
         workflow, pid_file, stdout, stderr, workers)
     if action == 'start':
         click.echo('Starting decider for %s' % workflow.name)
         click.echo('PID file: %s' % pid_file)
         click.echo('Stdout log: %s' % stdout)
         click.echo('Stderr log: %s' % stderr)
-        runner.start()
+        decider.start()
     elif action == 'stop':
         click.echo('Stopping decider for %s' % workflow.name)
-        runner.stop()
+        decider.stop()
     elif action == 'restart':
         click.echo('Restarting decider for %s' % workflow.name)
         click.echo('PID file: %s' % pid_file)
         click.echo('Stdout log: %s' % stdout)
         click.echo('Stderr log: %s' % stderr)
-        runner.restart()
+        decider.restart()
     else:
         click.echo(
             'Invalid action %s. Valid actions are start, stop and restart', action)

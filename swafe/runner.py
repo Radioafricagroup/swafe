@@ -12,16 +12,17 @@ from .exceptions import ActivityFailed, WorkflowFailed
 from .lib import swf
 from .daemon import Daemon
 from threading import Thread
+from multiprocessing.pool import ThreadPool
 
 
-class Runner(Daemon):
-
-    def __init__(self, workflow, pidfile, stdout, stderr, worker_count=5):
-        super(Runner, self).__init__(pidfile, stdout, stderr)
+class Worker(Thread):
+    def __init__(self, workflow):
+        Thread.__init__(self)
         self.workflow = workflow
-        self.worker_count = worker_count
+        self.daemon = True
+        self.start()
 
-    def worker(self):
+    def run(self):
         while True:
             try:
                 task = poller.poll_for_activity_task(
@@ -46,8 +47,20 @@ class Runner(Daemon):
                 print(e)
                 swf.respond_activity_task_failed(
                     taskToken=activity_task.task_token, reason=str(e), details=e.details)
+            except Exception as e:
+                print(e)
 
-    def decider(self):
+
+class Decider(Daemon):
+
+    def __init__(self, workflow, pidfile, stdout, stderr, worker_count=5):
+        super(Decider, self).__init__(pidfile, stdout, stderr)
+        self.workflow = workflow
+        self.worker_count = worker_count
+
+    def run(self):
+        for _ in range(self.worker_count):
+            Worker(self.workflow)
         while True:
             try:
                 task = poller.poll_for_decision_task(
@@ -64,6 +77,7 @@ class Runner(Daemon):
                 decisions = self.workflow.decider(decision_task)
                 swf.respond_decision_task_completed(
                     taskToken=decision_task.task_token, decisions=decisions)
+
             except ReadTimeout as e:
                 print("Read timeout while polling", e)
             except ClientError as e:
@@ -79,10 +93,3 @@ class Runner(Daemon):
                         }
                     }
                 ])
-
-    def run(self):
-        for i in range(0, self.worker_count):
-            thread = Thread(target=self.worker)
-            thread.setDaemon(True)
-            thread.start()
-        self.decider()
