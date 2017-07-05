@@ -5,7 +5,7 @@
 
 
 ## Installation
-  Swafe is available as a pip package. Currently in Alpha.
+  Swafe is available as a pip package.
   ```
     $ pip install swafe
   ```
