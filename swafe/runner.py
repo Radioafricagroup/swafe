@@ -13,14 +13,18 @@ from .lib import swf
 from .daemon import Daemon
 from threading import Thread
 from multiprocessing.pool import ThreadPool
+import logging
 
 
 class Worker(Thread):
-    def __init__(self, workflow):
+    def __init__(self, workflow, logger):
         Thread.__init__(self)
         self.workflow = workflow
+        self.logger = logger
         self.daemon = True
         self.start()
+        self.logger.debug('Started thread')
+
 
     def run(self):
         while True:
@@ -29,26 +33,27 @@ class Worker(Thread):
                     self.workflow.domain, {'name': self.workflow.taskList}, self.workflow.name)
                 # Check if poll is empty
                 if not 'taskToken' in task:
-                    print("No activities found after poll")
+                    self.logger.debug("No activities found after poll")
                     continue
 
                 activity_task = ActivityTask(task)
-                print('received activity task %s' % activity_task.activity)
+                self.logger.debug('Received task \'%s\' with id: %s' % (activity_task.activity, activity_task.activity_id))
                 activity = getattr(self.workflow, activity_task.activity)
                 result = activity.action(activity_task.input)
-                print('result %s' % result)
+
                 swf.respond_activity_task_completed(
                     taskToken=activity_task.task_token, result=result)
+                self.logger.debug('Completed task \'%s\' with id: %s' % (activity_task.activity, activity_task.activity_id))
             except ReadTimeout as e:
-                print("Read timeout while polling", e)
+                self.logger.error('Read timeout while polling')
             except ClientError as e:
-                print("Client error", e)
+                self.logger.error(e)
             except ActivityFailed as e:
-                print(e)
+                self.logger.error(e)
                 swf.respond_activity_task_failed(
                     taskToken=activity_task.task_token, reason=str(e), details=e.details)
             except Exception as e:
-                print(e)
+                self.logger.error(e)
 
 
 class Decider(Daemon):
@@ -60,7 +65,7 @@ class Decider(Daemon):
 
     def run(self):
         for _ in range(self.worker_count):
-            Worker(self.workflow)
+            Worker(self.workflow, self.logger)
         while True:
             try:
                 task = poller.poll_for_decision_task(
@@ -68,22 +73,41 @@ class Decider(Daemon):
 
                 # Check if poll is empty
                 if not 'taskToken' in task:
-                    print("No decisions found after poll")
+                    self.logger.debug("No decisions found after poll")
                     continue
 
                 decision_task = DecisionTask(task)
-                print('received decision task %s' %
-                      decision_task.completed_activity)
+
+                if decision_task.completed_activity:
+                    self.logger.debug('Received %s, workflowId: %s, activity: %s, activityId: %s' %
+                    (decision_task.event_type,
+                        decision_task.workflow_id,
+                        decision_task.completed_activity,
+                        decision_task.completed_activity_id))
+                else:
+                    self.logger.debug('Received %s, workflowId: %s' % (decision_task.event_type, decision_task.workflow_id))
+
                 decisions = self.workflow.decider(decision_task)
                 swf.respond_decision_task_completed(
                     taskToken=decision_task.task_token, decisions=decisions)
 
+                for decision in decisions:
+                    if decision['decisionType'] == 'ScheduleActivityTask':
+                        self.logger.debug('Dispatched %s, activity: %s, activityId: %s, workflowId: %s' %
+                        (decision['decisionType'],
+                            decision['scheduleActivityTaskDecisionAttributes']['activityType']['name'],
+                            decision['scheduleActivityTaskDecisionAttributes']['activityId'],
+                            decision_task.workflow_id))
+                    elif decision['decisionType'] == 'CompleteWorkflowExecution':
+                        self.logger.debug('Completed workflow execution, workflowId: %s' %
+                            decision_task.workflow_id)
+
             except ReadTimeout as e:
-                print("Read timeout while polling", e)
+                self.logger.error("Read timeout while polling", e)
             except ClientError as e:
-                print("Client error", e)
+                self.logger.error("Client error", e)
             except WorkflowFailed as e:
-                print(e)
+                self.logger.error(e)
                 swf.respond_decision_task_completed([
                     {
                         'decisionType': 'FailWorkflowExecution',

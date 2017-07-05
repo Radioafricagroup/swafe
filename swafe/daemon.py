@@ -16,6 +16,7 @@ import os
 import signal
 import sys
 import time
+import logging
 
 
 class Daemon(object):
@@ -27,6 +28,15 @@ class Daemon(object):
         self.stdout = stdout
         self.stderr = stderr
         self.pid_file = pid_file
+        self.logger = self.init_logger()
+
+    def init_logger(self):
+        logger = logging.getLogger(__name__)
+        handler = logging.FileHandler(self.stdout)
+        handler.setFormatter(logging.Formatter('%(asctime)-15s %(levelname)-6s %(message)s'))
+        logger.setLevel(logging.DEBUG)
+        logger.addHandler(handler)
+        return logger
 
     def del_pid(self):
         """ Delete the pid file. """
