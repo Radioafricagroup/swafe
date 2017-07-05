@@ -16,7 +16,7 @@ def setup_mock_env():
     swf = boto3.client('swf')
     test_workflow = TestCaseWorkflow()
 
-    swf.register_domain(**TEST_DOMAIN_PARAMS)
+    register_mock_domain(TEST_DOMAIN_PARAMS)
     swf.register_workflow_type(**test_workflow.params())
 
     for activity_definition in test_workflow.activity_definitions():
@@ -25,6 +25,10 @@ def setup_mock_env():
             'name': test_workflow.taskList}
 
         swf.register_activity_type(**activity_definition)
+
+def register_mock_domain(domain):
+    swf = boto3.client('swf')
+    swf.register_domain(**domain)
 
 def setup_mock_decision():
     swf = boto3.client('swf')

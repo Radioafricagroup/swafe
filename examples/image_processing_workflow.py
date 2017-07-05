@@ -5,11 +5,11 @@ The image processing functions defined here are borrowed from
 http://effbot.org/zone/pil-sepia.htm
 '''
 from builtins import range
-from swafe.workflow import Workflow
-from swafe import activity
-import boto3
 import json
 import os
+import boto3
+from swafe.workflow import Workflow
+from swafe import activity
 from PIL import Image, ImageOps
 
 

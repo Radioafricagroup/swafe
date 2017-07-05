@@ -60,6 +60,14 @@ class CLITestCase(unittest.TestCase):
         self.assertEqual(result.exit_code, 0)
         self.assertIn(self.test_workflow.name, result.output)
 
+        register_mock_domain({ 'name': 'WorkflowLessDomain',
+            'workflowExecutionRetentionPeriodInDays': '14',
+            'description': 'Test Domain'})
+
+        result=self.runner.invoke(cli.list_domain_workflows, ['WorkflowLessDomain'])
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn('There are no REGISTERED workflows', result.output)
+
         result=self.runner.invoke(cli.list_domain_workflows, ['Non-ExistentDomain'])
         self.assertEqual(result.exit_code, 0)
         self.assertIn('UnknownResourceFault', result.output)

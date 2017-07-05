@@ -31,7 +31,7 @@ class DecisionTask(object):
                 'activityTaskCompletedEventAttributes'].get('result')
         elif last_event['eventType'] == 'ActivityTaskFailed':
             raise WorkflowFailed(last_event['activityTaskFailedEventAttributes'][
-                                 'reason'], last_event['activityTaskFailedEventAttributes']['details'])
+                'reason'], last_event['activityTaskFailedEventAttributes']['details'])
 
 
 class ActivityTask(object):

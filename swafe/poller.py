@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from builtins import str
-from .lib import swf
 import uuid
+from .lib import swf
 
 
 def poll_for_decision_task(domain, task_list, workflow_name):

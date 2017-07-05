@@ -1,19 +1,18 @@
 from __future__ import print_function
 from __future__ import absolute_import
-from future import standard_library
-standard_library.install_aliases()
 from builtins import str
 from builtins import range
-from . import poller
+from threading import Thread
 from botocore.vendored.requests.exceptions import ReadTimeout
 from botocore.exceptions import ClientError
+from future import standard_library
+from . import poller
 from .task import ActivityTask, DecisionTask
 from .exceptions import ActivityFailed, WorkflowFailed
 from .lib import swf
 from .daemon import Daemon
-from threading import Thread
-from multiprocessing.pool import ThreadPool
-import logging
+standard_library.install_aliases()
+
 
 
 class Worker(Thread):
@@ -44,16 +43,16 @@ class Worker(Thread):
                 swf.respond_activity_task_completed(
                     taskToken=activity_task.task_token, result=result)
                 self.logger.debug('Completed task \'%s\' with id: %s' % (activity_task.activity, activity_task.activity_id))
-            except ReadTimeout as e:
+            except ReadTimeout as error:
                 self.logger.error('Read timeout while polling')
-            except ClientError as e:
-                self.logger.error(e)
-            except ActivityFailed as e:
-                self.logger.error(e)
+            except ClientError as error:
+                self.logger.error(error)
+            except ActivityFailed as error:
+                self.logger.error(error)
                 swf.respond_activity_task_failed(
-                    taskToken=activity_task.task_token, reason=str(e), details=e.details)
-            except Exception as e:
-                self.logger.error(e)
+                    taskToken=activity_task.task_token, reason=str(error), details=error.details)
+            except Exception as error:
+                self.logger.error(error)
 
 
 class Decider(Daemon):
@@ -79,13 +78,15 @@ class Decider(Daemon):
                 decision_task = DecisionTask(task)
 
                 if decision_task.completed_activity:
-                    self.logger.debug('Received %s, workflowId: %s, activity: %s, activityId: %s' %
-                    (decision_task.event_type,
-                        decision_task.workflow_id,
-                        decision_task.completed_activity,
-                        decision_task.completed_activity_id))
+                    self.logger.debug('Received %s, workflowId: %s, activity: %s, activityId: %s',
+                                      decision_task.event_type,
+                                      decision_task.workflow_id,
+                                      decision_task.completed_activity,
+                                      decision_task.completed_activity_id)
                 else:
-                    self.logger.debug('Received %s, workflowId: %s' % (decision_task.event_type, decision_task.workflow_id))
+                    self.logger.debug('Received %s, workflowId: %s',
+                                      decision_task.event_type,
+                                      decision_task.workflow_id)
 
                 decisions = self.workflow.decider(decision_task)
                 swf.respond_decision_task_completed(
@@ -93,27 +94,27 @@ class Decider(Daemon):
 
                 for decision in decisions:
                     if decision['decisionType'] == 'ScheduleActivityTask':
-                        self.logger.debug('Dispatched %s, activity: %s, activityId: %s, workflowId: %s' %
-                        (decision['decisionType'],
-                            decision['scheduleActivityTaskDecisionAttributes']['activityType']['name'],
-                            decision['scheduleActivityTaskDecisionAttributes']['activityId'],
-                            decision_task.workflow_id))
+                        self.logger.debug('Dispatched %s, activity: %s, activityId: %s, workflowId: %s',
+                                          decision['decisionType'],
+                                          decision['scheduleActivityTaskDecisionAttributes']['activityType']['name'],
+                                          decision['scheduleActivityTaskDecisionAttributes']['activityId'],
+                                          decision_task.workflow_id)
                     elif decision['decisionType'] == 'CompleteWorkflowExecution':
-                        self.logger.debug('Completed workflow execution, workflowId: %s' %
-                            decision_task.workflow_id)
+                        self.logger.debug('Completed workflow execution, workflowId: %s',
+                                          decision_task.workflow_id)
 
-            except ReadTimeout as e:
-                self.logger.error("Read timeout while polling", e)
-            except ClientError as e:
-                self.logger.error("Client error", e)
-            except WorkflowFailed as e:
-                self.logger.error(e)
+            except ReadTimeout as error:
+                self.logger.error('Read timeout while polling: %s', error)
+            except ClientError as error:
+                self.logger.error('Client error: %s', error)
+            except WorkflowFailed as error:
+                self.logger.error(error)
                 swf.respond_decision_task_completed([
                     {
                         'decisionType': 'FailWorkflowExecution',
                         'failWorkflowExecutionDecisionAttributes': {
-                            'reason': e.reason,
-                            'detail': e.details
+                            'reason': error.reason,
+                            'detail': error.details
                         }
                     }
                 ])
