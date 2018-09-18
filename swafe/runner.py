@@ -31,7 +31,7 @@ class Worker(Thread):
                 task = poller.poll_for_activity_task(
                     self.workflow.domain, {'name': self.workflow.taskList}, self.workflow.name)
                 # Check if poll is empty
-                if not 'taskToken' in task:
+                if task is not None and 'taskToken' not in task:
                     self.logger.debug("No activities found after poll")
                     continue
 
