@@ -7,12 +7,16 @@ The changes are:
 4 - Omits try/excepts if they only wrap one error message w/ another.
 i - http://stackoverflow.com/questions/3263672/python-the-difference-between-sys-stdout-write-and-print
 """
+from __future__ import print_function
+from builtins import str
+from builtins import object
 import atexit
 import datetime
 import os
 import signal
 import sys
 import time
+import logging
 
 
 class Daemon(object):
@@ -24,6 +28,15 @@ class Daemon(object):
         self.stdout = stdout
         self.stderr = stderr
         self.pid_file = pid_file
+        self.logger = self.init_logger()
+
+    def init_logger(self):
+        logger = logging.getLogger(__name__)
+        handler = logging.FileHandler(self.stdout)
+        handler.setFormatter(logging.Formatter('%(asctime)-15s %(levelname)-6s %(message)s'))
+        logger.setLevel(logging.DEBUG)
+        logger.addHandler(handler)
+        return logger
 
     def del_pid(self):
         """ Delete the pid file. """
@@ -59,7 +72,7 @@ class Daemon(object):
         #
         # Exceptions raised after this point will be written to the log file.
         sys.stderr.flush()
-        with open(self.stderr, 'a+', 0) as stderr:
+        with open(self.stderr, 'ab+', 0) as stderr:
             os.dup2(stderr.fileno(), sys.stderr.fileno())
 
         # stdout
@@ -67,7 +80,7 @@ class Daemon(object):
         # Print statements after this step will not work. Use sys.stdout
         # instead.
         sys.stdout.flush()
-        with open(self.stdout, 'a+', 0) as stdout:
+        with open(self.stdout, 'ab+', 0) as stdout:
             os.dup2(stdout.fileno(), sys.stdout.fileno())
 
         # Write pid file
@@ -88,9 +101,10 @@ class Daemon(object):
 
     def start(self):
         """ Start the daemon. """
-        print "Starting..."
+        print("Starting...")
         if self.get_pid_by_file():
-            print 'PID file {0} exists. Is the deamon already running?'.format(self.pid_file)
+            print('PID file {0} exists. Is the deamon already running?'.format(
+                self.pid_file))
             sys.exit(1)
 
         self.daemonize()
@@ -98,10 +112,11 @@ class Daemon(object):
 
     def stop(self):
         """ Stop the daemon. """
-        print "Stopping..."
+        print("Stopping...")
         pid = self.get_pid_by_file()
         if not pid:
-            print "PID file {0} doesn't exist. Is the daemon not running?".format(self.pid_file)
+            print("PID file {0} doesn't exist. Is the daemon not running?".format(
+                self.pid_file))
             return
 
         # Time to kill.
@@ -113,7 +128,7 @@ class Daemon(object):
             if 'No such process' in err.strerror and os.path.exists(self.pid_file):
                 os.remove(self.pid_file)
             else:
-                print err
+                print(err)
                 sys.exit(1)
 
     def restart(self):
