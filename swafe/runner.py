@@ -2,7 +2,7 @@ import poller
 from botocore.vendored.requests.exceptions import ReadTimeout
 from botocore.exceptions import ClientError
 from task import ActivityTask, DecisionTask
-from exceptions import ExcecutionFailed, MalformedTask
+from exceptions import ExcecutionFailed, MalformedTask, ParamValidationError
 from lib import swf
 from daemon import Daemon
 from threading import Thread
@@ -34,6 +34,8 @@ class Runner(Daemon):
                     taskToken=activity_task.task_token, result=result)
             except ReadTimeout as e:
                 print "Read timeout while polling", e
+            except ParamValidationError as e:
+                print "Parameter validation failed", e
             except ClientError as e:
                 print "Client error", e
             except ExcecutionFailed as e:
