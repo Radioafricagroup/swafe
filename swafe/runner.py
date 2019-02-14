@@ -5,6 +5,13 @@ from builtins import range
 from threading import Thread
 from botocore.vendored.requests.exceptions import ReadTimeout
 from botocore.exceptions import ClientError
+<<<<<<< HEAD
+from task import ActivityTask, DecisionTask
+from exceptions import ExcecutionFailed, MalformedTask, ParamValidationError
+from lib import swf
+from daemon import Daemon
+from threading import Thread
+=======
 from future import standard_library
 from . import poller
 from .task import ActivityTask, DecisionTask
@@ -12,6 +19,7 @@ from .exceptions import ActivityFailed, WorkflowFailed
 from .lib import swf
 from .daemon import Daemon
 standard_library.install_aliases()
+>>>>>>> d45abfb1423194cd350861cc691fbb0f0e8ede34
 
 
 
@@ -42,6 +50,19 @@ class Worker(Thread):
 
                 swf.respond_activity_task_completed(
                     taskToken=activity_task.task_token, result=result)
+<<<<<<< HEAD
+            except ReadTimeout as e:
+                print "Read timeout while polling", e
+            except ParamValidationError as e:
+                print "Parameter validation failed", e
+            except ClientError as e:
+                print "Client error", e
+            except ExcecutionFailed as e:
+                print e
+                swf.respond_activity_task_failed(taskToken=activity_task.task_token, reason=str(e), details=e.details)
+
+    def decider(self):
+=======
                 self.logger.debug('Completed task \'%s\' with id: %s' % (activity_task.activity, activity_task.activity_id))
             except ReadTimeout as error:
                 self.logger.error('Read timeout while polling')
@@ -65,6 +86,7 @@ class Decider(Daemon):
     def run(self):
         for _ in range(self.worker_count):
             Worker(self.workflow, self.logger)
+>>>>>>> d45abfb1423194cd350861cc691fbb0f0e8ede34
         while True:
             try:
                 task = poller.poll_for_decision_task(
