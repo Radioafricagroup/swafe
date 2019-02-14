@@ -23,8 +23,8 @@ class Workflow(with_metaclass(abc.ABCMeta, object)):
     version = None
     taskList = None
     description = None
-    taskStartToCloseTimeout = '3600'
-    executionStartToCloseTimeout = '3600'
+    taskStartToCloseTimeout = '7200'
+    executionStartToCloseTimeout = '7200'
     taskPriority = None
     childPolicy = 'TERMINATE'
     lambdaRole = None
