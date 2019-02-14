@@ -1,8 +1,8 @@
 from setuptools import setup, find_packages
 
-setup(name='swafe',
-      version='1.0.0',
-      description='A python library for orchestrating AWS SWF workflows',
+setup(name='swafer',
+      version='0.0.3',
+      description='A python library for orchestrating AWS SWF workflows, extended on Swafe by Ishuah, maintained by piedcrow',
       classifiers=[
           'Development Status :: 5 - Production/Stable',
           'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
@@ -12,8 +12,8 @@ setup(name='swafe',
       ],
       keywords='aws-swf SWF',
       url='https://github.com/Radioafricagroup/swafe',
-      author='Ishuah Kariuki',
-      author_email='kariuki@ishuah.com',
+      author='Joseph G.',
+      author_email='ndungugitau@gmail.com',
       license='GNU GPLv3',
       packages=find_packages(exclude=("test*", )),
       package_dir={
